@@ -27,6 +27,7 @@
         <Company>Unknown6656</Company>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="MumbleSharp" Version="2.0.1"/>
+        <PackageReference Include="MumbleSharp" Version="2.0.1" />
+        <!--<PackageReference Include="Unknown6656.DiscriminatedUnions" Version="1.1.1" />-->
     </ItemGroup>
 </Project>
