@@ -1,11 +1,12 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 
-using MumbleSharp;
-using MumbleProto;
 using MumbleSharp.Audio.Codecs;
 using MumbleSharp.Audio;
 using MumbleSharp.Model;
+using MumbleSharp;
+using MumbleProto;
+
 using NAudio.Wave;
 
 namespace Unknown6656.MumbleTest;
@@ -13,19 +14,50 @@ namespace Unknown6656.MumbleTest;
 
 public static class TestProgram
 {
-    public const string SERVER_HOST = "127.0.0.1";
-    public const ushort SERVER_PORT = 64738;
-    public const string SERVER_USER = "test-user";
-    public const string SERVER_PASS = "123secure";
+    private static string SERVER_HOST = "127.0.0.1";
+    private static ushort SERVER_PORT = 64738;
+    private static string USER_NAME = "SuperUser";
 
 
-    public static async void Main()
+    private static void Read(string prompt, ref string variable)
     {
+        Console.ForegroundColor = ConsoleColor.Gray;
+        Console.WriteLine($"Please enter the {prompt} or keep the line blank in order to keep the default value '{variable}'.");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        if (Console.ReadLine()?.Trim() is { Length: > 0 } s)
+            variable = s;
+
+        Console.ForegroundColor = ConsoleColor.Gray;
+    }
+
+    public static async Task Main()
+    {
+        string port = SERVER_PORT.ToString();
+        string pass = "";
+
+        Read("server name", ref SERVER_HOST);
+        Read("server port", ref port);
+        Read("user name", ref USER_NAME);
+        Read("user password", ref pass);
+
+        if (ushort.TryParse(port, out ushort p) && p > 0)
+            SERVER_PORT = p;
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"Invalid port '{port}'");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            return;
+        }
+
+
         IPEndPoint server_ep = new(Dns.GetHostAddresses(SERVER_HOST).First(a => a.AddressFamily is AddressFamily.InterNetwork or AddressFamily.InterNetworkV6), SERVER_PORT);
         TestProtocol protocol = new();
         MumbleConnection connection = new(server_ep, protocol);
 
-        connection.Connect(SERVER_USER, SERVER_PASS, [], SERVER_HOST);
+        connection.Connect(USER_NAME, pass, [], SERVER_HOST);
 
         TestRecorder recorder = new(protocol);
         Task update_loop = Task.Factory.StartNew(async () => await UpdateLoop(connection));
